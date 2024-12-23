@@ -1,5 +1,5 @@
 from models.user import UserCreate, UserResponse, UserFollowingResponse,UserFollowerResponse, FollowResponse
-from crud.user import insert_user, fetch_followings,fetch_followers, create_follow_relationship
+from crud.user import insert_user, fetch_followings, fetch_followers, create_follow_relationship
 from datetime import datetime
 
 
