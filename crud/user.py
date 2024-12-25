@@ -1,32 +1,14 @@
 from db import get_db
 
-def insert_user(user):
-    """
-    Yeni bir kullanıcı eklemek için veritabanı sorgusu.
-    """
-    with get_db() as conn:
-        cursor = conn.cursor()
-        query = """
-            INSERT INTO users (username, email, password, created_at)
-            VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
-            RETURNING user_id;
-        """
-        cursor.execute(query, (user.username, user.email, user.password))
-        conn.commit()
-        return cursor.fetchone()[0]  # Eklenen kullanıcının ID'si
-    
 
 
 def fetch_followings(user_id: int):
-    """
-    Veritabanından bir kullanıcının takip ettiği diğer kullanıcıları getirir.
-    """
     with get_db() as conn:
         cursor = conn.cursor()
         query = """
             SELECT u.user_id, u.username, u.email
             FROM follow f
-            JOIN users u ON f.following_id = u.user_id
+            JOIN "user" u ON f.following_id = u.user_id
             WHERE f.follower_id = %s;
         """
         cursor.execute(query, (user_id,))
@@ -36,15 +18,12 @@ def fetch_followings(user_id: int):
     
 
 def fetch_followers(user_id: int):
-    """
-    Veritabanından bir kullanıcının takipçilerini getirir.
-    """
     with get_db() as conn:
         cursor = conn.cursor()
         query = """
             SELECT u.user_id, u.username, u.email
             FROM follow f
-            JOIN users u ON f.follower_id = u.user_id
+            JOIN "user" u ON f.follower_id = u.user_id
             WHERE f.following_id = %s;
         """
         cursor.execute(query, (user_id,))

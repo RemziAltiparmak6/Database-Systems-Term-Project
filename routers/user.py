@@ -1,6 +1,8 @@
 from fastapi import APIRouter
 from models.user import UserCreate, UserResponse, UserFollowingResponse, UserFollowerResponse, FollowResponse
-from services.user import create_user_service, get_followings_service, get_followers_service, follow_user_service
+from services.user import get_followings_service, get_followers_service, follow_user_service
+from fastapi import Depends
+from helper import get_current_user
 
 
 router = APIRouter(
@@ -8,12 +10,9 @@ router = APIRouter(
     tags=["Users"]    # Swagger dokümantasyonu için grup etiketi
 )
 
-@router.post("/", response_model = UserResponse)
-def create_user(User: UserCreate):
-    return create_user_service(User)
 
 @router.get("/{user_id}/followings", response_model=list[UserFollowingResponse])          #Buna bir response model lazım
-def get_followings(user_id: int):
+def get_followings(user_id: int, current_user: dict = Depends(get_current_user)):
     return get_followings_service(user_id)
 
 

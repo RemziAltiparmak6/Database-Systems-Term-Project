@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from db import get_connection  # Veritabanı bağlantı fonksiyonu
 from routers.user import router as user_router  # User router
 from routers.movie import router as movie_router  # Movie router
+from routers.auth import router as auth_router  # Auth router
 
 # FastAPI uygulamasını başlat
 app = FastAPI()
@@ -9,6 +10,7 @@ app = FastAPI()
 # Router'ları uygulamaya dahil et
 app.include_router(user_router)
 app.include_router(movie_router)
+app.include_router(auth_router)
 
 # Başlangıç işlemleri
 @app.on_event("startup")

@@ -2,15 +2,12 @@ from db import get_db
 from datetime import datetime
 
 def fetch_all_movies():
-    """
-    Tüm filmleri yönetmen adıyla birlikte getirir.
-    """
     with get_db() as conn:
         cursor = conn.cursor()
         query = """
             SELECT m.movie_id, m.title, m.release_year, d.name AS director_name
-            FROM movies m
-            JOIN directors d ON m.director_id = d.director_id;
+            FROM movie m
+            JOIN director d ON m.director_id = d.director_id;
         """
         cursor.execute(query)
         rows = cursor.fetchall()
@@ -27,17 +24,14 @@ def fetch_all_movies():
     
 
 def fetch_movie_by_id(movie_id: int):
-    """
-    Veritabanından film bilgilerini getirir.
-    """
     with get_db() as conn:
         cursor = conn.cursor()
 
         # Film bilgileri ve yönetmen
         movie_query = """
             SELECT m.movie_id, m.title, m.release_year, d.name AS director_name
-            FROM movies m
-            JOIN directors d ON m.director_id = d.director_id
+            FROM movie m
+            JOIN director d ON m.director_id = d.director_id
             WHERE m.movie_id = %s;
         """
         cursor.execute(movie_query, (movie_id,))
@@ -46,7 +40,7 @@ def fetch_movie_by_id(movie_id: int):
         # Türler
         genres_query = """
             SELECT g.genre_id, g.name
-            FROM genres g
+            FROM genre g
             JOIN movie_genre mg ON g.genre_id = mg.genre_id
             WHERE mg.movie_id = %s;
         """
@@ -56,7 +50,7 @@ def fetch_movie_by_id(movie_id: int):
         # Oyuncular
         actors_query = """
             SELECT a.actor_id, a.name, a.birth_year, a.nationality
-            FROM actors a
+            FROM actor a
             JOIN movie_actor ma ON a.actor_id = ma.actor_id
             WHERE ma.movie_id = %s;
         """
@@ -66,7 +60,7 @@ def fetch_movie_by_id(movie_id: int):
         # Ödüller
         awards_query = """
             SELECT a.award_id, a.name, a.year
-            FROM awards a
+            FROM award a
             JOIN movie_award ma ON a.award_id = ma.award_id
             WHERE ma.movie_id = %s;
         """
@@ -86,7 +80,7 @@ def insert_review(movie_id: int, user_id: int, content: str, rating: float):
     with get_db() as conn:
         cursor = conn.cursor()
         query = """
-            INSERT INTO user_reviews (movie_id, user_id, content, rating, created_at)
+            INSERT INTO user_review (movie_id, user_id, content, rating, created_at)
             VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)
             RETURNING review_id, movie_id, user_id, content, rating, created_at;
         """
@@ -96,15 +90,12 @@ def insert_review(movie_id: int, user_id: int, content: str, rating: float):
     
 
 def fetch_reviews(movie_id: int):
-    """
-    Veritabanından bir filme ait tüm yorumları getirir.
-    """
     with get_db() as conn:
         cursor = conn.cursor()
         query = """
             SELECT r.review_id, r.user_id, u.username, r.content, r.rating, r.created_at
-            FROM user_reviews r
-            JOIN users u ON r.user_id = u.user_id
+            FROM user_review r
+            JOIN user u ON r.user_id = u.user_id
             WHERE r.movie_id = %s;
         """
         cursor.execute(query, (movie_id,))
