@@ -4,11 +4,23 @@ from datetime import datetime, timedelta, timezone
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 
-SECRET_KEY="e29a8b9a59f1e06ac9b99b34b49398d40198f63791782944fd83469d4c561217"
-ALGORITHM = "HS256"  
+
+from dotenv import load_dotenv
+import os
 
 
-def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes=30)):
+load_dotenv()
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
+ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+
+
+
+
+
+def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)):
     """
     JWT oluşturur.
     """
@@ -19,11 +31,6 @@ def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes
     return encoded_jwt
 
 
-
-SECRET_KEY = "your_secret_key"  # Daha güvenli bir yerde saklayın
-ALGORITHM = "HS256"
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
 def get_current_user(token: str = Depends(oauth2_scheme)):

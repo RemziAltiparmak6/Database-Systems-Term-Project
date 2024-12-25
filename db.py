@@ -3,9 +3,12 @@
 import psycopg2
 from contextlib import contextmanager
 from fastapi import HTTPException
+from dotenv import load_dotenv
+import os
 
 
-DATABASE_URL = "postgresql://a1:123456@34.77.191.120:5432/movie_platform"
+load_dotenv()
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 def get_connection():
     try:
