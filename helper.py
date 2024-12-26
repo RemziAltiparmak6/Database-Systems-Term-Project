@@ -20,7 +20,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
 
-def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)):
+def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes=30)):
     """
     JWT oluşturur.
     """
