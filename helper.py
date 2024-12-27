@@ -32,9 +32,16 @@ def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes
 
 
 
+token_blacklist = set()
+
+
+
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
+    if token in token_blacklist:
+        raise HTTPException(status_code=401, detail="Token has been revoked")
     try:
+        # Token doğrula
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: int = payload.get("user_id")
         username: str = payload.get("username")
