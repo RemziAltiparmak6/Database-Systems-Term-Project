@@ -84,3 +84,30 @@ def update_actor(actor_id: int, updated_data: dict):
         return cursor.fetchone()[0]  # Return the ID of the updated actor
 
 
+# Get all movies for a specific actor
+def get_movies_for_actor(actor_id: int):
+    query = """
+    SELECT m.title, m.release_date, m.vote_average
+    FROM movie m
+    JOIN movie_actor ma ON m.movie_id = ma.movie_id
+    WHERE ma.actor_id = %s;
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute(query, (actor_id,))
+        return cursor.fetchall()
+
+# Get the highest-rated movie for a specific actor
+def get_top_movie_for_actor(actor_id: int):
+    query = """
+    SELECT m.title, m.vote_average
+    FROM movie m
+    JOIN movie_actor ma ON m.movie_id = ma.movie_id
+    WHERE ma.actor_id = %s
+    ORDER BY m.vote_average DESC
+    LIMIT 1;
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute(query, (actor_id,))
+        return cursor.fetchone()

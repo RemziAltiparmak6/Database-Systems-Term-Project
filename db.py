@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from fastapi import HTTPException
 
 
-DATABASE_URL = "postgresql://a1:123456@34.77.191.120:5432/movie_platform"
+DATABASE_URL ="postgresql://a1:T4njuk7zy12ct@34.69.231.245:5432/film_database?sslmode=require"
 
 def get_connection():
     try:

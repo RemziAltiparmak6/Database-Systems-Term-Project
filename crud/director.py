@@ -81,3 +81,30 @@ def update_director(director_id: int, updated_data: dict):
         cursor.execute(query, tuple(values))
         conn.commit()
         return cursor.fetchone()[0]  # Return the ID of the updated director
+
+
+
+
+# Get all movies directed by a specific director
+def get_movies_by_director(director_id: int):
+    query = """
+    SELECT m.title, m.release_date, m.vote_average
+    FROM movie m
+    WHERE m.director_id = %s;
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute(query, (director_id,))
+        return cursor.fetchall()
+
+# Get the average rating of movies directed by a specific director
+def get_avg_rating_for_director(director_id: int):
+    query = """
+    SELECT AVG(m.vote_average)
+    FROM movie m
+    WHERE m.director_id = %s;
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute(query, (director_id,))
+        return cursor.fetchone()[0]  # Return the average rating
