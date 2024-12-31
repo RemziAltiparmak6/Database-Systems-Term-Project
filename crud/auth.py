@@ -24,19 +24,19 @@ def check_user_exists(username: str):
             WHERE username = %s;
         """
         cursor.execute(query, (username,))
-        user = cursor.fetchone()  # Kullanıcı bulunamazsa None döner
+        user = cursor.fetchone()  
         return user
 
-def insert_user(username: str, email: str, password: str):
+def insert_user(username: str, email: str, password: str, role: int):
     with get_db() as conn:
         try:
             cursor = conn.cursor()
             query = """
-                INSERT INTO "user" (username, email, password, created_at)
-                VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
+                INSERT INTO "user" (username, email, password, created_at, role)
+                VALUES (%s, %s, %s, CURRENT_TIMESTAMP, %s)
                 RETURNING user_id;
             """
-            cursor.execute(query, (username, email, password))
+            cursor.execute(query, (username, email, password, role))
             conn.commit()
             return cursor.fetchone()[0]
         except IntegrityError as e:

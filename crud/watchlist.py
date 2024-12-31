@@ -25,7 +25,7 @@ def insert_watchlist(user_id: int, name: str):
             raise Exception(f"Database error: {str(e)}")
         
 
-def fetch_movies_in_watchlist(watchlist_id: int):   #Burada hata var, genre değil director name döndürmeli
+def fetch_movies_in_watchlist(watchlist_id: int):
     with get_db() as conn:
         cursor = conn.cursor()
         try:
@@ -34,18 +34,17 @@ def fetch_movies_in_watchlist(watchlist_id: int):   #Burada hata var, genre değ
                     m.movie_id, 
                     m.title, 
                     m.release_year, 
-                    g.name
+                    d.name AS director_name
                 FROM 
-                    movies m
+                    movie m
                 JOIN 
-                    movie_genre mg 
+                    director d 
                 ON 
-                    m.movie_id = mg.movie_id
-                JOIN
-                    genre g
-                On
-                    mg.movie_id = g.genre_id
-
+                    m.director_id = d.director_id
+                JOIN 
+                    watchlist_item wm 
+                ON 
+                    m.movie_id = wm.movie_id
                 WHERE 
                     wm.watchlist_id = %s;
             """
@@ -63,6 +62,7 @@ def fetch_movies_in_watchlist(watchlist_id: int):   #Burada hata var, genre değ
             ]
         except Exception as e:
             raise Exception(f"Database error: {str(e)}")
+
         
 
         
@@ -70,6 +70,7 @@ def add_movie_to_watchlist(watchlist_id: int, movie_id: int, user_id: int):
     with get_db() as conn:
         cursor = conn.cursor()
         try:
+            # İzleme listesine film ekle
             query = """
                 INSERT INTO watchlist_item (watchlist_id, movie_id)
                 SELECT w.watchlist_id, %s
@@ -77,22 +78,40 @@ def add_movie_to_watchlist(watchlist_id: int, movie_id: int, user_id: int):
                 WHERE w.watchlist_id = %s AND w.user_id = %s
                 RETURNING watchlist_id, movie_id;
             """
-            # Tüm parametreleri sağlayın
             cursor.execute(query, (movie_id, watchlist_id, user_id))
             row = cursor.fetchone()
-            
-            if not row:
-                raise Exception("Unauthorized access or invalid watchlist.")
-
             conn.commit()
 
-            return {
-                "watchlist_id": row[0],
-                "movie_id": row[1]
+            if not row:
+                raise Exception("Failed to add movie to watchlist")
+
+            # Film detaylarını al
+            movie_query = """
+                SELECT m.movie_id, m.title, m.release_year, d.name AS director_name
+                FROM movie m
+                JOIN director d ON m.director_id = d.director_id
+                WHERE m.movie_id = %s;
+            """
+            cursor.execute(movie_query, (movie_id,))
+            movie_row = cursor.fetchone()
+
+            if not movie_row:
+                raise Exception("Movie not found")
+
+            # movie_row'u sözlüğe dönüştür
+            movie_data = {
+                "movie_id": movie_row[0],
+                "title": movie_row[1],
+                "release_year": movie_row[2],
+                "director_name": movie_row[3]
             }
+
+            return movie_data
         except Exception as e:
             conn.rollback()
             raise Exception(f"Database error: {str(e)}")
+
+
 
 
 
@@ -100,6 +119,7 @@ def remove_movie_from_watchlist(watchlist_id: int, movie_id: int, user_id: int):
     with get_db() as conn:
         cursor = conn.cursor()
         try:
+            # İzleme listesinden filmi sil
             query = """
                 DELETE FROM watchlist_item
                 WHERE watchlist_id = %s 
@@ -116,16 +136,35 @@ def remove_movie_from_watchlist(watchlist_id: int, movie_id: int, user_id: int):
 
             if not row:
                 raise Exception("Unauthorized access or invalid watchlist/movie combination.")
-            
+
+            # Film detaylarını almak için sorgu
+            movie_query = """
+                SELECT m.movie_id, m.title, m.release_year, d.name AS director_name
+                FROM movies m
+                JOIN directors d ON m.director_id = d.director_id
+                WHERE m.movie_id = %s;
+            """
+            cursor.execute(movie_query, (movie_id,))
+            movie_row = cursor.fetchone()
+
+            if not movie_row:
+                raise Exception("Movie not found.")
+
             conn.commit()
 
+            # Film bilgilerini döndür
             return {
-                "watchlist_id": row[0],
-                "movie_id": row[1]
+                "movie_id": movie_row[0],
+                "title": movie_row[1],
+                "release_year": movie_row[2],
+                "director_name": movie_row[3]
             }
         except Exception as e:
             conn.rollback()
             raise Exception(f"Database error: {str(e)}")
+
+        
+
         
 def get_movies_from_watchlist(watchlist_id: int):
     with get_db() as conn:

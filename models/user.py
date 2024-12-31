@@ -5,6 +5,7 @@ class UserCreate(BaseModel):
     username: str
     email: EmailStr
     password: str
+    role: int = 0       # 0: Normal kullanıcı, 1: Admin
 
 
 class UserResponse(BaseModel):

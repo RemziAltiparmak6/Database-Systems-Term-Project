@@ -1,7 +1,7 @@
 from jose import JWTError, jwt
 from datetime import datetime, timedelta, timezone
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
 
@@ -21,9 +21,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
 def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes=30)):
-    """
-    JWT oluşturur.
-    """
     to_encode = data.copy()
     expire = datetime.now(tz=timezone.utc) + expires_delta
     to_encode.update({"exp": expire})
@@ -45,8 +42,18 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: int = payload.get("user_id")
         username: str = payload.get("username")
+        role: str = payload.get("role")
         if user_id is None or username is None:
             raise HTTPException(status_code=401, detail="Invalid token payload")
-        return {"user_id": user_id, "username": username}
+        return {"user_id": user_id, "username": username, "role": role}
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
+    
+
+def admin_required(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != 1:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to perform this action"
+        )
+    return current_user

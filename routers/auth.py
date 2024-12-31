@@ -28,17 +28,15 @@ def login_json(form_data: OAuth2PasswordRequestForm = Depends()):
         return login_user_service(form_data.username, form_data.password)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    
+        
 
 @router.post("/logout")
 def logout(token: str = Depends(oauth2_scheme)):
-    """
-    Kullanıcının token'ını kara listeye ekler.
-    """
     if not token:
         raise HTTPException(status_code=400, detail="Token is missing")
     
     token_blacklist.add(token)
+    print(token_blacklist)
     return {"detail": "Successfully logged out"}
 
 

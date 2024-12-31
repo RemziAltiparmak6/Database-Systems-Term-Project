@@ -28,7 +28,7 @@ class Award(BaseModel):
 class MovieDetailResponse(BaseModel):
     movie_id: int
     title: str
-    release_year: Optional[int]
+    release_year: int
     director_name: str
     genres: List[Genre]  # Türler
     actors: List[Actor]  # Oyuncular
@@ -36,7 +36,6 @@ class MovieDetailResponse(BaseModel):
 
 
 class ReviewCreate(BaseModel):
-    user_id: int
     content: str = Field(..., max_length=500)  # Maksimum uzunluk 500 karakter
     rating: float = Field(..., ge=0, le=10)  # 0 ile 10 arasında bir değer
 
@@ -55,4 +54,13 @@ class ReviewResponse2(BaseModel):
     content: str
     rating: float
     created_at: datetime
+
+
+class CreateMovie(BaseModel):
+    title: str
+    release_year: int
+    director_id: int
+    actor_ids: List[int]
+    genre_ids: List[int]
+    award_ids: List[int]
 
