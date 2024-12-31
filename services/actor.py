@@ -1,6 +1,6 @@
 from crud.actor import insert_actor, fetch_actor_by_id, fetch_all_actors, update_actor, get_movies_for_actor
 from models.actor import ActorCreate, ActorResponse, ActorUpdate
-from models.movie import MovieResponse
+from models.movie import MovieResponse2
 from fastapi import HTTPException, status
 from typing import List
 
@@ -86,7 +86,7 @@ def update_actor_service(actor_id: int, actor_update: ActorUpdate) -> ActorRespo
             detail=f"An error occurred while updating the actor: {str(e)}"
         )
 
-def get_movies_for_actor_service(actor_id: int) -> List[MovieResponse]:
+def get_movies_for_actor_service(actor_id: int) -> List[MovieResponse2]:
     """
     Retrieves all movies for a specific actor.
     """
@@ -99,7 +99,7 @@ def get_movies_for_actor_service(actor_id: int) -> List[MovieResponse]:
             return []  # No movies found, so return an empty list
         
         # Format the movie data into MovieResponse model
-        movie_responses = [MovieResponse(
+        movie_responses = [MovieResponse2(
             movie_id=movie[0],  # Assuming movie tuple format: (movie_id, title, director_id, release_year)
             title=movie[1],
             director_id=movie[2],
