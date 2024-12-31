@@ -3,9 +3,15 @@
 import psycopg2
 from contextlib import contextmanager
 from fastapi import HTTPException
+from dotenv import load_dotenv
+import os
 
 
-DATABASE_URL ="postgresql://a1:T4njuk7zy12ct@34.69.231.245:5432/film_database?sslmode=require"
+
+
+load_dotenv()
+DATABASE_URL = os.getenv("DATABASE_URL")
+
 
 def get_connection():
     try:
