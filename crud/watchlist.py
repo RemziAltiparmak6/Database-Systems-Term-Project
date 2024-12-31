@@ -1,5 +1,18 @@
 from db import get_db
 
+
+
+def get_watchlist_owner(watchlist_id: int) -> int:
+    with get_db() as conn:
+        cursor = conn.cursor()
+        query = "SELECT user_id FROM watchlist WHERE watchlist_id = %s;"
+        cursor.execute(query, (watchlist_id,))
+        owner = cursor.fetchone()
+        if not owner:
+            raise ValueError("Watchlist not found")
+        return owner[0]  # Watchlist'in sahibinin user_id'sini döner
+
+
     
 def insert_watchlist(user_id: int, name: str):
     with get_db() as conn:
@@ -13,6 +26,61 @@ def insert_watchlist(user_id: int, name: str):
             cursor.execute(query, (user_id, name))
             row = cursor.fetchone()
             conn.commit()
+
+            return {
+                "watchlist_id": row[0],
+                "user_id": row[1],
+                "name": row[2],
+                "created_at": row[3],
+            }
+        except Exception as e:
+            conn.rollback()
+            raise Exception(f"Database error: {str(e)}")
+        
+
+def update_watchlist(watchlist_id: int, name: str):
+    with get_db() as conn:
+        cursor = conn.cursor()
+        try:
+            query = """
+                UPDATE watchlist
+                SET name = %s
+                WHERE watchlist_id = %s
+                RETURNING watchlist_id, user_id, name, created_at;
+            """
+            cursor.execute(query, (name, watchlist_id))
+            row = cursor.fetchone()
+            conn.commit()
+
+            if not row:
+                raise Exception("Watchlist not found")
+
+            return {
+                "watchlist_id": row[0],
+                "user_id": row[1],
+                "name": row[2],
+                "created_at": row[3],
+            }
+        except Exception as e:
+            conn.rollback()
+            raise Exception(f"Database error: {str(e)}")
+        
+
+def delete_watchlist(watchlist_id: int):
+    with get_db() as conn:
+        cursor = conn.cursor()
+        try:
+            query = """
+                DELETE FROM watchlist
+                WHERE watchlist_id = %s 
+                RETURNING watchlist_id, user_id, name, created_at;
+            """
+            cursor.execute(query, (watchlist_id))
+            row = cursor.fetchone()
+            conn.commit()
+
+            if not row:
+                raise Exception("Watchlist not found")
 
             return {
                 "watchlist_id": row[0],
@@ -62,11 +130,40 @@ def fetch_movies_in_watchlist(watchlist_id: int):
             ]
         except Exception as e:
             raise Exception(f"Database error: {str(e)}")
+        
+def fetch_watchlists(user_id: int):
+    with get_db() as conn:
+        cursor = conn.cursor()
+        try:
+            query = """
+                SELECT 
+                    watchlist_id, 
+                    name, 
+                    created_at
+                FROM 
+                    watchlist
+                WHERE 
+                    user_id = %s;
+            """
+            cursor.execute(query, (user_id,))
+            rows = cursor.fetchall()
 
+            return [
+                {
+                    "watchlist_id": row[0],
+                    "user_id": user_id,
+                    "name": row[1],
+                    "created_at": row[2]
+                }
+                for row in rows
+            ]
+        except Exception as e:
+            raise Exception(f"Database error: {str(e)}")
+        
         
 
         
-def add_movie_to_watchlist(watchlist_id: int, movie_id: int, user_id: int):
+def add_movie_to_watchlist(watchlist_id: int, movie_id: int):
     with get_db() as conn:
         cursor = conn.cursor()
         try:
@@ -75,10 +172,10 @@ def add_movie_to_watchlist(watchlist_id: int, movie_id: int, user_id: int):
                 INSERT INTO watchlist_item (watchlist_id, movie_id)
                 SELECT w.watchlist_id, %s
                 FROM watchlist w
-                WHERE w.watchlist_id = %s AND w.user_id = %s
+                WHERE w.watchlist_id = %s
                 RETURNING watchlist_id, movie_id;
             """
-            cursor.execute(query, (movie_id, watchlist_id, user_id))
+            cursor.execute(query, (movie_id, watchlist_id))
             row = cursor.fetchone()
             conn.commit()
 
@@ -115,7 +212,7 @@ def add_movie_to_watchlist(watchlist_id: int, movie_id: int, user_id: int):
 
 
 
-def remove_movie_from_watchlist(watchlist_id: int, movie_id: int, user_id: int):
+def remove_movie_from_watchlist(watchlist_id: int, movie_id: int):
     with get_db() as conn:
         cursor = conn.cursor()
         try:
@@ -127,11 +224,11 @@ def remove_movie_from_watchlist(watchlist_id: int, movie_id: int, user_id: int):
                   AND watchlist_id IN (
                       SELECT w.watchlist_id
                       FROM watchlist w
-                      WHERE w.watchlist_id = %s AND w.user_id = %s
+                      WHERE w.watchlist_id = %s
                   )
                 RETURNING watchlist_id, movie_id;
             """
-            cursor.execute(query, (watchlist_id, movie_id, watchlist_id, user_id))
+            cursor.execute(query, (watchlist_id, movie_id, watchlist_id))
             row = cursor.fetchone()
 
             if not row:
@@ -151,8 +248,6 @@ def remove_movie_from_watchlist(watchlist_id: int, movie_id: int, user_id: int):
                 raise Exception("Movie not found.")
 
             conn.commit()
-
-            # Film bilgilerini döndür
             return {
                 "movie_id": movie_row[0],
                 "title": movie_row[1],

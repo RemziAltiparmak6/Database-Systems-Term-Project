@@ -93,6 +93,8 @@ def add_review_service(user_id: int, movie_id: int, review: ReviewCreate) -> Rev
 def delete_review_service(user_id:int, review_id: int) -> ReviewResponse:
     try:
         result = delete_review_from_db(user_id, review_id)
+        if not result:
+            raise ValueError("Review could not be deleted")
 
         return ReviewResponse(
             review_id=result["review_id"],
@@ -116,10 +118,8 @@ def delete_review_service(user_id:int, review_id: int) -> ReviewResponse:
 
 def add_movie_service(movie_data: CreateMovie) -> MovieDetailResponse:
     try:
-        # 1. Movie ekle
         movie_id = add_movie_to_db(movie_data.title, movie_data.release_year, movie_data.director_id)
 
-        # 2. Actors, Genres, Awards ekle
         if movie_data.actor_ids:
             add_actors_to_movie(movie_id, movie_data.actor_ids)
         if movie_data.genre_ids:
@@ -128,8 +128,9 @@ def add_movie_service(movie_data: CreateMovie) -> MovieDetailResponse:
             add_awards_to_movie(movie_id, movie_data.award_ids),
         
         data = fetch_movie_by_id(movie_id)
+        if not data:
+            raise ValueError("Movie not found")
 
-        # 3. Movie detaylarını getir
         movie_data = {
             "movie_id": data["movie"][0],
             "title": data["movie"][1],
@@ -143,6 +144,10 @@ def add_movie_service(movie_data: CreateMovie) -> MovieDetailResponse:
             "awards": [{"award_id": a[0], "name": a[1], "year": a[2]} for a in data["awards"]]
         }
         return MovieDetailResponse(**movie_data)
+    
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
@@ -150,12 +155,13 @@ def add_movie_service(movie_data: CreateMovie) -> MovieDetailResponse:
 
 
 
-def update_movie_service(movie_id:int, movie:CreateMovie) -> MovieDetailResponse:     #bunda da response model eklenmeli
+def update_movie_service(movie_id:int, movie:CreateMovie) -> MovieDetailResponse:     
     try:
-        # Film güncelleme işlemi
         update_movie_in_db(movie_id, movie.title, movie.release_year, movie.director_id)
 
         data = fetch_movie_by_id(movie_id)
+        if not data:
+            raise ValueError("Movie not found")
         
         movie_data = {
             "movie_id": data["movie"][0],
@@ -170,6 +176,10 @@ def update_movie_service(movie_id:int, movie:CreateMovie) -> MovieDetailResponse
             "awards": [{"award_id": a[0], "name": a[1], "year": a[2]} for a in data["awards"]]
         }
         return MovieDetailResponse(**movie_data)
+    
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
@@ -177,6 +187,9 @@ def update_movie_service(movie_id:int, movie:CreateMovie) -> MovieDetailResponse
 def delete_movie_service(movie_id:int) -> MovieDetailResponse:  
     try:
         data = fetch_movie_by_id(movie_id)
+        if not data:
+            raise ValueError("Movie not found")
+        
         delete_movie_from_db(movie_id)
         
         movie_data = {
@@ -192,5 +205,9 @@ def delete_movie_service(movie_id:int) -> MovieDetailResponse:
             "awards": [{"award_id": a[0], "name": a[1], "year": a[2]} for a in data["awards"]]
         }
         return MovieDetailResponse(**movie_data)
+    
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
