@@ -1,5 +1,7 @@
 from db import get_db
 
+
+
 def insert_director(director):
     """
     Inserts a new director into the database.
@@ -7,11 +9,11 @@ def insert_director(director):
     with get_db() as conn:
         cursor = conn.cursor()
         query = """
-            INSERT INTO director (name, biography, birth_date, place_of_birth)
-            VALUES (%s, %s, %s, %s)
+            INSERT INTO director (name, nationality, birth_year)
+            VALUES (%s, %s, %s)
             RETURNING director_id;
         """
-        cursor.execute(query, (director.name, director.biography, director.birth_date, director.place_of_birth))
+        cursor.execute(query, (director.name, director.nationality, director.birth_year))
         conn.commit()
         return cursor.fetchone()[0]  # Return the ID of the newly added director
 
@@ -23,21 +25,24 @@ def fetch_director_by_id(director_id: int):
     with get_db() as conn:
         cursor = conn.cursor()
         query = """
-            SELECT director_id, name, biography, birth_date, place_of_birth
+            SELECT director_id, name, nationality, birth_year
             FROM director
             WHERE director_id = %s;
         """
         cursor.execute(query, (director_id,))
         row = cursor.fetchone()
-        return {
-            "director_id": row[0],
-            "name": row[1],
-            "biography": row[2],
-            "birth_date": row[3],
-            "place_of_birth": row[4],
-        } if row else None
-
-
+        if row:
+            return {
+                "director_id": row[0],
+                "name": row[1],
+                "nationality": row[2],
+                "birth_year": row[3],
+            }
+        return None  # Return None if no director found
+    
+    
+    
+    
 def fetch_all_directors():
     """
     Fetches all directors from the database.
@@ -45,7 +50,7 @@ def fetch_all_directors():
     with get_db() as conn:
         cursor = conn.cursor()
         query = """
-            SELECT director_id, name, biography, birth_date, place_of_birth
+            SELECT director_id, name, nationality, birth_year
             FROM director
             ORDER BY director_id ASC;
         """
@@ -55,11 +60,9 @@ def fetch_all_directors():
             {
                 "director_id": row[0],
                 "name": row[1],
-                "biography": row[2],
-                "birth_date": row[3],
-                "place_of_birth": row[4],
-            }
-            for row in result
+                "nationality": row[2],
+                "birth_year": row[3],
+            } for row in result
         ]
 
 
@@ -69,8 +72,11 @@ def update_director(director_id: int, updated_data: dict):
     """
     with get_db() as conn:
         cursor = conn.cursor()
-        fields = [f"{key} = %s" for key in updated_data.keys()]
-        values = list(updated_data.values())
+        fields = []
+        values = []
+        for key, value in updated_data.items():
+            fields.append(f"{key} = %s")
+            values.append(value)
         values.append(director_id)
         query = f"""
             UPDATE director
@@ -81,14 +87,14 @@ def update_director(director_id: int, updated_data: dict):
         cursor.execute(query, tuple(values))
         conn.commit()
         return cursor.fetchone()[0]  # Return the ID of the updated director
-
-
-
-
-# Get all movies directed by a specific director
-def get_movies_by_director(director_id: int):
+    
+    
+def get_movies_for_director(director_id: int):
+    """
+    Retrieves all movies for a specific director.
+    """
     query = """
-    SELECT m.title, m.release_date, m.vote_average
+    SELECT m.movie_id, m.title, m.director_id, m.release_year
     FROM movie m
     WHERE m.director_id = %s;
     """
@@ -96,15 +102,3 @@ def get_movies_by_director(director_id: int):
         cursor = conn.cursor()
         cursor.execute(query, (director_id,))
         return cursor.fetchall()
-
-# Get the average rating of movies directed by a specific director
-def get_avg_rating_for_director(director_id: int):
-    query = """
-    SELECT AVG(m.vote_average)
-    FROM movie m
-    WHERE m.director_id = %s;
-    """
-    with get_db() as conn:
-        cursor = conn.cursor()
-        cursor.execute(query, (director_id,))
-        return cursor.fetchone()[0]  # Return the average rating

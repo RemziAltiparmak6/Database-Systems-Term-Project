@@ -7,11 +7,11 @@ def insert_actor(actor):
     with get_db() as conn:
         cursor = conn.cursor()
         query = """
-            INSERT INTO actor (name, biography, birth_date, place_of_birth)
-            VALUES (%s, %s, %s, %s)
+            INSERT INTO actor (name, nationality, birth_year)
+            VALUES (%s, %s, %s)
             RETURNING actor_id;
         """
-        cursor.execute(query, (actor.name, actor.biography, actor.birth_date, actor.place_of_birth))
+        cursor.execute(query, (actor.name, actor.nationality, actor.birth_year))
         conn.commit()
         return cursor.fetchone()[0]  # Return the ID of the newly added actor
 
@@ -22,7 +22,7 @@ def fetch_actor_by_id(actor_id: int):
     with get_db() as conn:
         cursor = conn.cursor()
         query = """
-            SELECT actor_id, name, biography, birth_date, place_of_birth
+            SELECT actor_id, name, nationality, birth_year
             FROM actor
             WHERE actor_id = %s;
         """
@@ -32,9 +32,8 @@ def fetch_actor_by_id(actor_id: int):
             return {
                 "actor_id": row[0],
                 "name": row[1],
-                "biography": row[2],
-                "birth_date": row[3],
-                "place_of_birth": row[4]
+                "nationality": row[2],
+                "birth_year": row[3],
             }
         return None  # Return None if no actor found
 
@@ -45,7 +44,7 @@ def fetch_all_actors():
     with get_db() as conn:
         cursor = conn.cursor()
         query = """
-            SELECT actor_id, name, biography, birth_date, place_of_birth
+            SELECT actor_id, name, nationality, birth_year
             FROM actor
             ORDER BY actor_id ASC;
         """
@@ -55,9 +54,8 @@ def fetch_all_actors():
             {
                 "actor_id": row[0],
                 "name": row[1],
-                "biography": row[2],
-                "birth_date": row[3],
-                "place_of_birth": row[4]
+                "nationality": row[2],
+                "birth_year": row[3],
             } for row in result
         ]
 
@@ -70,8 +68,9 @@ def update_actor(actor_id: int, updated_data: dict):
         fields = []
         values = []
         for key, value in updated_data.items():
-            fields.append(f"{key} = %s")
-            values.append(value)
+            if key != 'biography':  # Exclude the biography field (if any)
+                fields.append(f"{key} = %s")
+                values.append(value)
         values.append(actor_id)
         query = f"""
             UPDATE actor
@@ -83,11 +82,10 @@ def update_actor(actor_id: int, updated_data: dict):
         conn.commit()
         return cursor.fetchone()[0]  # Return the ID of the updated actor
 
-
 # Get all movies for a specific actor
 def get_movies_for_actor(actor_id: int):
     query = """
-    SELECT m.title, m.release_date, m.vote_average
+    SELECT m.movie_id, m.title, m.director_id, m.release_year
     FROM movie m
     JOIN movie_actor ma ON m.movie_id = ma.movie_id
     WHERE ma.actor_id = %s;
@@ -96,18 +94,3 @@ def get_movies_for_actor(actor_id: int):
         cursor = conn.cursor()
         cursor.execute(query, (actor_id,))
         return cursor.fetchall()
-
-# Get the highest-rated movie for a specific actor
-def get_top_movie_for_actor(actor_id: int):
-    query = """
-    SELECT m.title, m.vote_average
-    FROM movie m
-    JOIN movie_actor ma ON m.movie_id = ma.movie_id
-    WHERE ma.actor_id = %s
-    ORDER BY m.vote_average DESC
-    LIMIT 1;
-    """
-    with get_db() as conn:
-        cursor = conn.cursor()
-        cursor.execute(query, (actor_id,))
-        return cursor.fetchone()

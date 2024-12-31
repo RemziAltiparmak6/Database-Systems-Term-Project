@@ -1,29 +1,29 @@
+from crud.actor import insert_actor, fetch_actor_by_id, fetch_all_actors, update_actor, get_movies_for_actor
 from models.actor import ActorCreate, ActorResponse, ActorUpdate
 from models.movie import MovieResponse
-from crud.actor import insert_actor, fetch_actor_by_id, fetch_all_actors, update_actor,get_movies_for_actor, get_top_movie_for_actor
-from typing import List
 from fastapi import HTTPException, status
-
+from typing import List
 
 def create_actor_service(actor: ActorCreate) -> ActorResponse:
     """
     Creates a new actor.
     """
     try:
+        # Call the CRUD operation to insert the actor and get the actor ID
         actor_id = insert_actor(actor)
+        
+        # Return the actor response
         return ActorResponse(
             actor_id=actor_id,
             name=actor.name,
-            biography=actor.biography,
-            birth_date=actor.birth_date,
-            place_of_birth=actor.place_of_birth,
+            birth_year=actor.birth_year,
+            nationality=actor.nationality
         )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred while creating the actor: {str(e)}"
         )
-
 
 def get_actor_by_id_service(actor_id: int) -> ActorResponse:
     """
@@ -35,8 +35,9 @@ def get_actor_by_id_service(actor_id: int) -> ActorResponse:
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Actor with ID {actor_id} not found."
         )
-    return ActorResponse(**actor)
-
+    
+    # Return the actor details using the ActorResponse model
+    return ActorResponse(**actor)  # Unpack the dictionary or tuple returned by the CRUD function
 
 def get_all_actors_service() -> List[ActorResponse]:
     """
@@ -49,13 +50,14 @@ def get_all_actors_service() -> List[ActorResponse]:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="No actors found."
             )
-        return [ActorResponse(**actor) for actor in actors]
+        
+        # Return the list of actors formatted as ActorResponse models
+        return [ActorResponse(**actor) for actor in actors]  # Unpack each actor dictionary or tuple into ActorResponse
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred while fetching actors: {str(e)}"
         )
-
 
 def update_actor_service(actor_id: int, actor_update: ActorUpdate) -> ActorResponse:
     """
@@ -69,35 +71,41 @@ def update_actor_service(actor_id: int, actor_update: ActorUpdate) -> ActorRespo
         )
 
     try:
-        updated_actor_id = update_actor(actor_id, actor_update.dict(exclude_unset=True))
+        updated_actor_id = update_actor(actor_id, actor_update.dict(exclude_unset=True))  # Ensure only updated fields
         updated_actor = fetch_actor_by_id(updated_actor_id)
         if not updated_actor:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Actor with ID {actor_id} not found after update."
             )
-        return ActorResponse(**updated_actor)
+        
+        return ActorResponse(**updated_actor)  # Unpack the updated actor data
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred while updating the actor: {str(e)}"
         )
 
-
-def get_movies_for_actor_service(actor_id: int):
+def get_movies_for_actor_service(actor_id: int) -> List[MovieResponse]:
     """
     Retrieves all movies for a specific actor.
     """
     try:
+        # Call the CRUD function to get movies for the actor
         movies = get_movies_for_actor(actor_id)
+        
         if not movies:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Movies not found for actor"
-            )
+            # If no movies are found, return an empty list
+            return []  # No movies found, so return an empty list
         
         # Format the movie data into MovieResponse model
-        movie_responses = [MovieResponse(**movie) for movie in movies]
+        movie_responses = [MovieResponse(
+            movie_id=movie[0],  # Assuming movie tuple format: (movie_id, title, director_id, release_year)
+            title=movie[1],
+            director_id=movie[2],
+            release_year=movie[3]
+        ) for movie in movies]  # Convert each movie data into MovieResponse
+        
         return movie_responses
     except Exception as e:
         raise HTTPException(
@@ -105,24 +113,4 @@ def get_movies_for_actor_service(actor_id: int):
             detail=f"An error occurred while fetching movies for actor: {str(e)}"
         )
 
-def get_top_movie_for_actor_service(actor_id: int):
-    """
-    Retrieves the highest-rated movie for a specific actor.
-    """
-    try:
-        top_movie = get_top_movie_for_actor(actor_id)
-        if not top_movie:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Top movie not found for actor"
-            )
-        
-        # Format the top movie into MovieResponse model
-        top_movie_response = MovieResponse(**top_movie)
-        
-        return top_movie_response
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"An error occurred while fetching top movie for actor: {str(e)}"
-        )
+

@@ -6,8 +6,7 @@ from services.actor import (
     get_actor_by_id_service,
     get_all_actors_service,
     update_actor_service,
-    get_movies_for_actor_service,
-    get_top_movie_for_actor_service
+    get_movies_for_actor_service
 )
 
 router = APIRouter()
@@ -38,12 +37,3 @@ def get_movies_for_actor(actor_id: int):
     
     # Call the service to get all movies for the actor
     return get_movies_for_actor_service(actor_id)
-    
-
-# Endpoint to get the highest-rated movie for a specific actor
-@router.get("/actors/{actor_id}/top-movie", response_model=MovieResponse)
-def get_top_movie_for_actor(actor_id: int):
-    
-    # Call the service to get the top movie for the actor
-    return get_top_movie_for_actor_service(actor_id)
-    

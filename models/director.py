@@ -4,17 +4,15 @@ from datetime import date
 
 class DirectorCreate(BaseModel):
     name: str
-    biography: Optional[str] = None
-    birth_date: Optional[date] = None
-    place_of_birth: Optional[str] = None
+    birth_year: Optional[int] = None
+    nationality: Optional[str] = None
 
 
 class DirectorResponse(BaseModel):
     director_id: int
     name: str
-    biography: Optional[str] = None
-    birth_date: Optional[date] = None
-    place_of_birth: Optional[str] = None
+    birth_year: Optional[int] = None
+    nationality: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -22,6 +20,5 @@ class DirectorResponse(BaseModel):
 
 class DirectorUpdate(BaseModel):
     name: Optional[str] = None
-    biography: Optional[str] = None
-    birth_date: Optional[date] = None
-    place_of_birth: Optional[str] = None
+    birth_year: Optional[int] = None
+    nationality: Optional[str] = None
