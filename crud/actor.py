@@ -14,6 +14,17 @@ def insert_actor(actor):
         cursor.execute(query, (actor.name, actor.nationality, actor.birth_year))
         conn.commit()
         return cursor.fetchone()[0]  # Return the ID of the newly added actor
+    
+    
+def delete_actor(actor_id: int):
+    """
+    Deletes an actor from the database.
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+        query = "DELETE FROM actor WHERE actor_id = %s;"
+        cursor.execute(query, (actor_id,))
+        conn.commit()
 
 def fetch_actor_by_id(actor_id: int):
     """

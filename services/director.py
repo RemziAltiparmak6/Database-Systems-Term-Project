@@ -1,6 +1,6 @@
-from crud.director import insert_director, fetch_director_by_id, fetch_all_directors, update_director, get_movies_for_director
+from crud.director import insert_director, fetch_director_by_id, fetch_all_directors, update_director, get_movies_for_director,delete_director
 from models.director import DirectorCreate, DirectorResponse, DirectorUpdate
-from models.movie import MovieResponse
+from models.movie import MovieResponse2
 from fastapi import HTTPException, status
 from typing import List
 
@@ -86,7 +86,7 @@ def update_director_service(director_id: int, director_update: DirectorUpdate) -
             detail=f"An error occurred while updating the director: {str(e)}"
         )
 
-def get_movies_for_director_service(director_id: int) -> List[MovieResponse]:
+def get_movies_for_director_service(director_id: int) -> List[MovieResponse2]:
     """
     Retrieves all movies for a specific director.
     """
@@ -99,11 +99,11 @@ def get_movies_for_director_service(director_id: int) -> List[MovieResponse]:
             return []  # No movies found, so return an empty list
         
         # Format the movie data into MovieResponse model
-        movie_responses = [MovieResponse(
+        movie_responses = [MovieResponse2(
             movie_id=movie[0],  # Assuming movie tuple format: (movie_id, title, release_year, vote_average)
             title=movie[1],
-            release_year=movie[2],
-            director_name=movie[3]
+            director_id=movie[2],
+            release_year=movie[3]
         ) for movie in movies]  # Convert each movie data into MovieResponse
         
         return movie_responses
@@ -111,4 +111,19 @@ def get_movies_for_director_service(director_id: int) -> List[MovieResponse]:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred while fetching movies for director: {str(e)}"
+        )
+
+
+
+def delete_director_service(director_id: int):
+    """
+    Deletes a director.
+    """
+    try:
+        delete_director(director_id)
+        return {"message": f"Director with ID {director_id} deleted successfully."}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while deleting the director: {str(e)}"
         )

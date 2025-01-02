@@ -1,4 +1,4 @@
-from crud.actor import insert_actor, fetch_actor_by_id, fetch_all_actors, update_actor, get_movies_for_actor
+from crud.actor import insert_actor, fetch_actor_by_id, fetch_all_actors, update_actor, get_movies_for_actor, delete_actor
 from models.actor import ActorCreate, ActorResponse, ActorUpdate
 from models.movie import MovieResponse2
 from fastapi import HTTPException, status
@@ -114,3 +114,15 @@ def get_movies_for_actor_service(actor_id: int) -> List[MovieResponse2]:
         )
 
 
+def delete_actor_service(actor_id: int):
+    """
+    Deletes a actor.
+    """
+    try:
+        delete_actor(actor_id)
+        return {"message": f"Actor with ID {actor_id} deleted successfully."}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while deleting the actor: {str(e)}"
+        )

@@ -17,6 +17,16 @@ def insert_director(director):
         conn.commit()
         return cursor.fetchone()[0]  # Return the ID of the newly added director
 
+def delete_director(director_id: int):
+    """
+    Deletes an director from the database.
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+        query = "DELETE FROM director WHERE director_id = %s;"
+        cursor.execute(query, (director_id,))
+        conn.commit()
+
 
 def fetch_director_by_id(director_id: int):
     """
