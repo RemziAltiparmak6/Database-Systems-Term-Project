@@ -7,7 +7,7 @@ from services.watchlist import get_movies_in_watchlist_service,delete_watchlist_
 from helper import get_current_user
 
 router = APIRouter(
-    prefix = "/wathlist",
+    prefix = "/watchlist",
     tags = ["Watchlist"]
 )
 
