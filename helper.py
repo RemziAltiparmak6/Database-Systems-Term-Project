@@ -17,6 +17,9 @@ ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
+token_blacklist = set()
+
+
 
 
 
@@ -26,10 +29,6 @@ def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
-
-
-
-token_blacklist = set()
 
 
 

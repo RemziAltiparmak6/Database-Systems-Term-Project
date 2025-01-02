@@ -2,9 +2,10 @@ from fastapi import APIRouter
 from models.user import UserResponse, UserCreate
 from models.auth import  LoginResponse
 from services.auth import sign_up_service, login_user_service
-from helper import oauth2_scheme
+from helper import oauth2_scheme, token_blacklist
 from fastapi import HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm
+
 
 
 
@@ -13,8 +14,6 @@ router = APIRouter(
     prefix="/auth",  # Tüm endpoint'ler /users ile başlayacak
     tags=["Auth"]    # Swagger dokümantasyonu için grup etiketi
 )
-
-token_blacklist = set()
 
 @router.post("/signup/", response_model = UserResponse)
 def sign_up(User: UserCreate):
@@ -36,7 +35,6 @@ def logout(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=400, detail="Token is missing")
     
     token_blacklist.add(token)
-    print(token_blacklist)
     return {"detail": "Successfully logged out"}
 
 
