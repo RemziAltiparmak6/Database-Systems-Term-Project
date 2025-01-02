@@ -9,7 +9,7 @@ from services.actor import (
     get_movies_for_actor_service
 )
 
-router = APIRouter()
+router = APIRouter(prefix="/actors", tags=["Actors"])
 
 @router.post("/actors/", response_model=ActorResponse)
 def create_actor(actor: ActorCreate):

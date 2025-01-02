@@ -9,7 +9,7 @@ from services.director import (
 from models.director import DirectorCreate, DirectorResponse, DirectorUpdate
 from models.movie import MovieResponse
 
-router = APIRouter()
+router = APIRouter(prefix="/directors", tags=["Directors"])
 
 @router.post("/directors/", response_model=DirectorResponse)
 def create_director(director: DirectorCreate):

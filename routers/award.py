@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from services.award import create_award_service, update_award_service, delete_award_service, get_all_awards_service
 from models.award import AwardCreate, AwardResponse, AwardUpdate
 
-router = APIRouter()
+router = APIRouter(prefiz="/awards", tags=["Awards"])
 
 @router.post("/awards/", response_model=AwardResponse)
 def create_award(award: AwardCreate):

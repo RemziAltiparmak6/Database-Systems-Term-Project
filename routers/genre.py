@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from services.genre import create_genre_service, update_genre_service, delete_genre_service, get_all_genres_service
 from models.genre import GenreCreate, GenreResponse, GenreUpdate
 
-router = APIRouter()
+router = APIRouter(prefix="/genres", tags=["Genres"])
 
 @router.post("/genres/", response_model=GenreResponse)
 def create_genre(genre: GenreCreate):
