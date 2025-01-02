@@ -90,13 +90,18 @@ def update_director(director_id: int, updated_data: dict):
     
     
 def get_movies_for_director(director_id: int):
-    """
-    Retrieves all movies for a specific director.
-    """
     query = """
-    SELECT m.movie_id, m.title, m.director_id, m.release_year
-    FROM movie m
-    WHERE m.director_id = %s;
+    SELECT 
+        m.movie_id, 
+        m.title, 
+        m.release_year, 
+        d.name
+    FROM 
+        movie m
+    JOIN 
+        director d ON m.director_id = d.director_id
+    WHERE 
+        m.director_id = %s;
     """
     with get_db() as conn:
         cursor = conn.cursor()
