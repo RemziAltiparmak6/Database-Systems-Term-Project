@@ -18,7 +18,10 @@ from routers.watchlist import router as watchlist_router  # Watchlist router
 app = FastAPI()
 
 # Router'ları uygulamaya dahil et
+app.include_router(auth_router)
 app.include_router(user_router)
+app.include_router(movie_router)
+app.include_router(watchlist_router)
 
 app.include_router(actor_router)
 app.include_router(director_router)
@@ -26,9 +29,9 @@ app.include_router(award_router)
 app.include_router(genre_router)
 
 
-app.include_router(movie_router)
-app.include_router(auth_router)
-app.include_router(watchlist_router)
+
+
+
 
 # Başlangıç işlemleri
 @app.on_event("startup")
