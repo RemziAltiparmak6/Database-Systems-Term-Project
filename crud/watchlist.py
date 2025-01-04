@@ -75,7 +75,7 @@ def delete_watchlist(watchlist_id: int):
                 WHERE watchlist_id = %s 
                 RETURNING watchlist_id, user_id, name, created_at;
             """
-            cursor.execute(query, (watchlist_id))
+            cursor.execute(query, (watchlist_id,))
             row = cursor.fetchone()
             conn.commit()
 
@@ -289,4 +289,8 @@ def get_movies_from_watchlist(watchlist_id: int):
         except Exception as e:
             conn.rollback()
             raise Exception(f"Database error: {str(e)}")
+        
+
+
+
 
