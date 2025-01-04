@@ -1,6 +1,9 @@
 
 from pydantic import BaseModel
 from typing import Optional
+from datetime import datetime
+from pydantic import Field
+from typing import List
 
 
 # Movie Response Model (for GET requests)
@@ -32,11 +35,6 @@ class MovieUpdate(BaseModel):
         orm_mode = True  # Allows conversion between ORM and Pydantic models
 
 
-
-from pydantic import BaseModel, Field
-from typing import List, Optional
-from datetime import datetime
-
 class GenreResponse(BaseModel):
     genre_id: int
     name: str
@@ -61,9 +59,6 @@ class ActorUpdate(BaseModel):
     birth_year: Optional[int] = None
     nationality: Optional[str] = None
 
-from pydantic import BaseModel, Field
-from typing import List, Optional
-from datetime import datetime
 
 class MovieResponse(BaseModel):
     movie_id: int

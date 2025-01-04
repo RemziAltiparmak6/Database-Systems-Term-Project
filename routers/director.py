@@ -9,7 +9,7 @@ from services.director import (
 )
 
 from models.director import DirectorCreate, DirectorResponse, DirectorUpdate
-from models.movie import MovieResponse2
+from models.movie import MovieResponse
 from helper import get_current_user, admin_required
 router = APIRouter(prefix="/directors", tags=["Directors"])
 
@@ -29,7 +29,7 @@ def get_all_directors( current_user: dict = Depends(get_current_user)):
 def update_director(director_id: int, director_update: DirectorUpdate, current_user: dict = Depends(admin_required)):
     return update_director_service(director_id, director_update)
 
-@router.get("/{director_id}/movies", response_model=list[MovieResponse2])
+@router.get("/{director_id}/movies", response_model=list[MovieResponse])
 def get_movies_for_director(director_id: int, current_user: dict = Depends(get_current_user)):
     return get_movies_for_director_service(director_id)
 
